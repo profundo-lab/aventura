@@ -2,11 +2,14 @@
 This module is a collection of frequently used routines
 and helper functions.
 
-    actualizado en el once de octubre de 2020
+
+    - https://github.com/profundo-lab/aventura/
+
+    actualizado en el veintidos de octubre de 2020
 """
 
 import datetime as dt
-# from datetime import timedelta
+import os
 import sys
 import gzip
 import matplotlib.pyplot as plt
@@ -19,9 +22,27 @@ import torchvision
 import time
 import requests
 import pytz
+from pathlib import Path
 
 
+def determine_working_root(project_path: str) -> str:
+    try:
+        from google.colab import drive, files
+        drive.mount('/content/drive')
+        home_dir = '/content/drive/My Drive/'
+        in_colab = True
+    except ModuleNotFoundError:
+        in_colab = False
+        if sys.platform == 'linux':
+            home_dir = '/mnt/hgfs/'
+        else:
+            home_dir = Path.home()
 
+    return os.path.join(
+        home_dir,
+        '' if in_colab else 'Google Drive',
+        project_path
+    )
 
 def display_working_env() -> None:
     print(f'Your runtime is running on {sys.platform}')
@@ -29,20 +50,23 @@ def display_working_env() -> None:
     print('.............has {:.1f} gigabytes of available RAM\n'.format(ram_gb))
     print(f'Python version = {sys.version}')
     print(f'scikit-learn version = {sklearn.__version__}')
-    print(f'PyTorch version = {torch.__version__}')
-    print(f'TorchVision version = {torchvision.__version__}')
+    try:
+        print(f'PyTorch version = {torch.__version__}')
+        print(f'TorchVision version = {torchvision.__version__}')
 
-    device = torch.device(
-        'cuda' if torch.cuda.is_available() else 'cpu'
-    )
-    print('Torch Device set to -->', device)
+        device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu'
+        )
+        print('Torch Device set to -->', device)
 
-    # Additional Info when using cuda
-    if device.type == 'cuda':
-        print(torch.cuda.get_device_name(0))
-        print('Memory Usage:')
-        print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
-        print('Cached:   ', round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1), 'GB')
+        # Additional Info when using cuda
+        if device.type == 'cuda':
+            print(torch.cuda.get_device_name(0))
+            print('Memory Usage:')
+            print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
+            print('Cached:   ', round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1), 'GB')
+    except ModuleNotFoundError:
+        pass
 
 
 CST = pytz.timezone('Asia/Taipei')
